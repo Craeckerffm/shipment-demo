@@ -3,6 +3,8 @@ package gs.demo.shipment.api;
 import gs.demo.shipment.application.ShipmentService;
 import gs.demo.shipment.api.dto.CreateShipmentDto;
 import gs.demo.shipment.api.dto.ShipmentResponseDto;
+import gs.demo.shipment.application.exception.ParcelAlreadyHandledException;
+import gs.demo.shipment.application.exception.TrackingNumberGenerationException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -25,7 +27,7 @@ public class ShipmentResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response create(@Valid CreateShipmentDto dto, @Context UriInfo uriInfo) {
+    public Response create(@Valid CreateShipmentDto dto, @Context UriInfo uriInfo) throws TrackingNumberGenerationException, ParcelAlreadyHandledException {
 
         ShipmentResponseDto created = service.create(dto);
 

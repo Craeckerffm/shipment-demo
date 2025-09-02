@@ -15,7 +15,6 @@ public interface ShipmentMapper {
 
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true)
     @Mapping(target = "trackingNumber", ignore = true)
     Shipment fromCreate(CreateShipmentDto dto);
 

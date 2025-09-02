@@ -3,6 +3,8 @@ package gs.demo.shipment.application;
 import gs.demo.shipment.api.mapper.ShipmentMapper;
 import gs.demo.shipment.api.dto.CreateShipmentDto;
 import gs.demo.shipment.api.dto.ShipmentResponseDto;
+import gs.demo.shipment.application.exception.ParcelAlreadyHandledException;
+import gs.demo.shipment.application.exception.TrackingNumberGenerationException;
 import gs.demo.shipment.domain.entity.OutboxEvent;
 import gs.demo.shipment.domain.entity.Shipment;
 import gs.demo.shipment.domain.enums.ShipmentStatus;
@@ -20,21 +22,19 @@ public class ShipmentService {
     ShipmentMapper mapper;
 
     @Inject
+    TrackingNumberService trackingNumberService;
+
+    @Inject
     ShipmentRepository shipmentRepository;
 
     @Transactional
-    public ShipmentResponseDto create(CreateShipmentDto dto) {
+    public ShipmentResponseDto create(CreateShipmentDto dto) throws TrackingNumberGenerationException, ParcelAlreadyHandledException {
         if (shipmentRepository.isUnique(dto.parcelId()) == false) {
-            throw new IllegalArgumentException();
+            throw new ParcelAlreadyHandledException("ParcelId already exists");
         }
 
-
-        // compute tracking number in service
-        String trackingNumber = "12345";
-
         Shipment s = mapper.fromCreate(dto);
-        s.status = ShipmentStatus.CREATED;
-        s.trackingNumber = trackingNumber;
+        s.trackingNumber = trackingNumberService.generateTrackingNumber();
         shipmentRepository.save(s);
 
         OutboxEvent o = new OutboxEvent();
@@ -45,6 +45,6 @@ public class ShipmentService {
         o.occurredOn = Instant.now();
         o.persistAndFlush();
 
-        return new ShipmentResponseDto(s.trackingNumber, s.status);
+        return new ShipmentResponseDto(s.trackingNumber);
     }
 }

@@ -1,6 +1,5 @@
 package gs.demo.shipment.domain.entity;
 
-import gs.demo.shipment.domain.enums.ShipmentStatus;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
@@ -22,8 +21,4 @@ public class Shipment extends PanacheEntityBase {
 
     @Column(nullable = false, length = 50)
     public String trackingNumber;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    public ShipmentStatus status;
 }
