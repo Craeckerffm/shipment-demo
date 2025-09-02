@@ -1,6 +1,7 @@
 package gs.demo.shipment.application;
 
 import gs.demo.shipment.domain.entity.OutboxEvent;
+import gs.demo.shipment.domain.enums.EventStatus;
 import gs.demo.shipment.domain.repository.OutboxEventRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import io.quarkus.scheduler.Scheduled;
@@ -35,7 +36,7 @@ public class OutboxPublisher {
             try {
                 shipmentEmitter.send(event.payload);
                 event.processed = true;
-                event.status = "PROCESSED";
+                event.status = EventStatus.SUCCESS;
                 repository.save(event);
 
                 LOG.infof("Successfully published event %d for aggregate %s",
@@ -45,7 +46,7 @@ public class OutboxPublisher {
                 LOG.errorf(e, "Failed to publish event %d for aggregate %s",
                         event.id, event.aggregateId);
 
-                event.status = "FAILED";
+                event.status = EventStatus.FAILED;
                 repository.save(event);
             }
         }

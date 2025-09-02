@@ -26,6 +26,4 @@ public class Shipment extends PanacheEntityBase {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     public ShipmentStatus status;
-
-
 }

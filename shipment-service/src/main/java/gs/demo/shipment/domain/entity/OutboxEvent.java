@@ -1,5 +1,6 @@
 package gs.demo.shipment.domain.entity;
 
+import gs.demo.shipment.domain.enums.EventStatus;
 import gs.demo.shipment.domain.enums.ShipmentStatus;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
@@ -22,6 +23,7 @@ public class OutboxEvent extends PanacheEntityBase {
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     public ShipmentStatus eventType;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     public String payload;
 
@@ -31,17 +33,8 @@ public class OutboxEvent extends PanacheEntityBase {
     @Column(nullable = false)
     public boolean processed = false;
 
-    @Column(nullable = false)
-    public String status = "PENDING";
+    @Column(nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    public EventStatus status = EventStatus.PENDING;
 
-    public OutboxEvent() {
-    }
-
-    public OutboxEvent(String aggregateType, String aggregateId, ShipmentStatus eventType, String payload) {
-        this.aggregateType = aggregateType;
-        this.aggregateId = aggregateId;
-        this.eventType = eventType;
-        this.payload = payload;
-        this.occurredOn = Instant.now();
-    }
 }

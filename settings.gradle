@@ -1,3 +1,4 @@
+
 pluginManagement {
     repositories {
         mavenCentral()
@@ -9,3 +10,7 @@ pluginManagement {
     }
 }
 rootProject.name='shipment-demo'
+
+include 'shipment-service'
+//include 'scanner-service'
+//include 'shared-common'
