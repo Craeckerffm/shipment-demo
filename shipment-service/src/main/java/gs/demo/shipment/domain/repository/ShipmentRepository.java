@@ -6,5 +6,5 @@ public interface ShipmentRepository {
 
     Boolean isUnique(String parcelId);
 
-    public Shipment save(Shipment event);
+    Shipment save(Shipment event);
 }

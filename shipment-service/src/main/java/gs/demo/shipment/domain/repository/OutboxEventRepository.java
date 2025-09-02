@@ -8,5 +8,5 @@ import java.util.List;
 public interface OutboxEventRepository {
     List<OutboxEvent> findAllPending();
 
-    public OutboxEvent save(OutboxEvent event);
+    OutboxEvent save(OutboxEvent event);
 }

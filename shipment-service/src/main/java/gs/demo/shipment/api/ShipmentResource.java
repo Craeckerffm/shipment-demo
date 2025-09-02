@@ -1,6 +1,6 @@
 package gs.demo.shipment.api;
 
-import gs.demo.shipment.application.ShipmentService;
+import gs.demo.shipment.application.ShipmentResourceHandler;
 import gs.demo.shipment.api.dto.CreateShipmentDto;
 import gs.demo.shipment.api.dto.ShipmentResponseDto;
 import gs.demo.shipment.application.exception.ParcelAlreadyHandledException;
@@ -22,7 +22,7 @@ import java.net.URI;
 public class ShipmentResource {
 
     @Inject
-    ShipmentService service;
+    ShipmentResourceHandler service;
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

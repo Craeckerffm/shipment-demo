@@ -16,7 +16,7 @@ import static io.quarkus.arc.ComponentsProvider.LOG;
 
 
 @ApplicationScoped
-public class OutboxPublisher {
+public class ShipmentOutboxPublisher {
 
     @Inject
     OutboxEventRepository repository;

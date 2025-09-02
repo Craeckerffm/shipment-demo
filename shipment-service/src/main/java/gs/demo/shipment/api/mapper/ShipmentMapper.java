@@ -13,10 +13,8 @@ public interface ShipmentMapper {
 
     CreateShipmentDto toDto(Shipment entity);
 
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "trackingNumber", ignore = true)
     Shipment fromCreate(CreateShipmentDto dto);
-
 
 }
