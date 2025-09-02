@@ -1,5 +1,6 @@
 package gs.demo.shipment.domain.entity;
 
+
 import gs.demo.shipment.domain.enums.EventStatus;
 import gs.demo.shipment.domain.enums.ShipmentStatus;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;

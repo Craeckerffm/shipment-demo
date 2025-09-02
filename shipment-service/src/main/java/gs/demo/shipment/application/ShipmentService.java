@@ -1,5 +1,7 @@
 package gs.demo.shipment.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import gs.demo.shipment.api.dto.ShipmentEventDto;
 import gs.demo.shipment.api.mapper.ShipmentMapper;
 import gs.demo.shipment.api.dto.CreateShipmentDto;
 import gs.demo.shipment.api.dto.ShipmentResponseDto;
@@ -27,6 +29,9 @@ public class ShipmentService {
     @Inject
     ShipmentRepository shipmentRepository;
 
+    @Inject
+    ObjectMapper objectMapper;
+
     @Transactional
     public ShipmentResponseDto create(CreateShipmentDto dto) throws TrackingNumberGenerationException, ParcelAlreadyHandledException {
         if (shipmentRepository.isUnique(dto.parcelId()) == false) {
@@ -39,10 +44,22 @@ public class ShipmentService {
 
         OutboxEvent o = new OutboxEvent();
         o.aggregateType = "Shipment";
-        o.aggregateId = s.id.toString();
+        o.aggregateId = s.trackingNumber;
         o.eventType = ShipmentStatus.CREATED;
-        o.payload = "Specific Payload";
         o.occurredOn = Instant.now();
+
+        ShipmentEventDto eventData = new ShipmentEventDto(
+                o.aggregateType,
+                o.aggregateId,
+                o.occurredOn
+        );
+
+        try {
+            o.payload = objectMapper.writeValueAsString(eventData);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize event data to JSON", e);
+        }
+
         o.persistAndFlush();
 
         return new ShipmentResponseDto(s.trackingNumber);
