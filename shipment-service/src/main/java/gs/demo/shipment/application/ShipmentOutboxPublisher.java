@@ -3,6 +3,7 @@ package gs.demo.shipment.application;
 import gs.demo.shipment.domain.entity.OutboxEvent;
 import gs.demo.shipment.domain.enums.EventStatus;
 import gs.demo.shipment.domain.repository.OutboxEventRepository;
+import io.smallrye.reactive.messaging.kafka.KafkaRecord;
 import jakarta.enterprise.context.ApplicationScoped;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.inject.Inject;
@@ -11,6 +12,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import java.util.List;
+import java.util.UUID;
 
 import static io.quarkus.arc.ComponentsProvider.LOG;
 
@@ -34,7 +36,16 @@ public class ShipmentOutboxPublisher {
 
         for (OutboxEvent event : pendingEvents) {
             try {
-                shipmentEmitter.send(event.payload);
+
+                KafkaRecord<String, String> record = KafkaRecord.of(event.aggregateId, event.payload)
+                        .withHeader("eventId", UUID.randomUUID().toString())
+                        .withHeader("eventType", event.eventType.name())
+                        .withHeader("aggregateType", event.aggregateType)
+                        .withHeader("producerService", "shipment-service")
+                        .withHeader("correlationId", event.aggregateId)
+                        .withHeader("timestamp", event.occurredOn.toString());
+
+                shipmentEmitter.send(record);
                 event.processed = true;
                 event.status = EventStatus.SUCCESS;
                 repository.save(event);
