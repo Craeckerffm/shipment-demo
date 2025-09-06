@@ -1,6 +1,7 @@
 package gs.demo.shipemnt.api.exception;
 
 import gs.demo.shipemnt.api.dto.ErrorResponseDto;
+import gs.demo.shipemnt.application.exception.ParcelAlreadyHandledException;
 import gs.demo.shipemnt.application.exception.TrackingNumberGenerationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -9,14 +10,14 @@ import jakarta.ws.rs.ext.Provider;
 import java.time.Instant;
 
 @Provider
-public class TrackingNumberGenerationExceptionMapper implements ExceptionMapper<TrackingNumberGenerationException> {
+public class ParcelAlreadyHandledExceptionMapper implements ExceptionMapper<ParcelAlreadyHandledException> {
 
     @Override
-    public Response toResponse(TrackingNumberGenerationException exception) {
+    public Response toResponse(ParcelAlreadyHandledException e) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
-                Response.Status.SERVICE_UNAVAILABLE.getStatusCode(),
+                Response.Status.CONFLICT.getStatusCode(),
                 "TRACKING_NUMBER_GENERATION_FAILED",
-                exception.getMessage(),
+                e.getMessage(),
                 Instant.now().toString()
         );
 
@@ -24,5 +25,6 @@ public class TrackingNumberGenerationExceptionMapper implements ExceptionMapper<
                 .entity(errorResponse)
                 .build();
     }
+
 
 }
