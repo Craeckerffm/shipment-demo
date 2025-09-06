@@ -1,0 +1,1 @@
+ALTER TABLE outbox_event ADD COLUMN event_id VARCHAR(100) NOT NULL DEFAULT '0'

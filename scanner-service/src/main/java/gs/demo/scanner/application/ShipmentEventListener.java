@@ -1,77 +1,91 @@
 package gs.demo.scanner.application;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import gs.demo.scanner.api.dto.ShipmentEventDto;
 import gs.demo.scanner.domain.entity.InboxEvent;
 import gs.demo.scanner.domain.repository.InboxEventRepository;
+import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Validator;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static io.quarkus.arc.ComponentsProvider.LOG;
 
 @ApplicationScoped
+@Blocking
 public class ShipmentEventListener {
 
     @Inject
     InboxEventRepository inboxEventRepository;
 
+    @Inject
+    Validator validator;
+
+    @Inject
+    ObjectMapper objectMapper;
+
     @Incoming("shipment-created")
+    @Blocking
     @Transactional
-    public void onShipmentCreated(ConsumerRecord<String, Double> record) {
+    public CompletionStage<Void> onShipmentCreated(ConsumerRecord<String, String> record) {
 
-        if (record.key() == null || record.key().isEmpty()) {
-            LOG.warnf("Rejected Message with empty key - Topic: %s, Partition: %d, Offset: %d",
-                    record.topic(), record.partition(), record.offset());
-            return;
+        String messageKey = record.key();
+        String jsonPayload = record.value();
+
+        ShipmentEventDto eventDto;
+        try {
+            eventDto = objectMapper.readValue(jsonPayload, ShipmentEventDto.class);
+        } catch (Exception e) {
+            LOG.errorf("Failed to deserialize message payload: %s", e.getMessage());
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid JSON payload"));
         }
 
-        String eventId = extractHeaderAsString(record, "eventId");
-
-        if (eventId == null || eventId.isEmpty()) {
-            LOG.warnf("Rejected Message with missing eventId - Key: %s",
-                    record.key());
-            return;
+        var violations = validator.validate(eventDto);
+        if (!violations.isEmpty()) {
+            LOG.errorf("Validation failed for shipment event: %s", violations);
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Invalid event data"));
         }
 
-        if (inboxEventRepository.alreadyHandled(eventId)) {
-            LOG.infof("Message with key  %s- already handled", record.key());
-            return;
+        LOG.infof("Received shipment event - MessageKey: %s, TrackingNumber: %s, Status: %s",
+                messageKey, eventDto.aggregateId(), eventDto.eventType());
+
+        if (messageKey == null || messageKey.isEmpty()) {
+            LOG.warnf("Rejected Message with empty key - TrackingNumber: %s", eventDto.aggregateId());
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Message key is required"));
         }
 
-        String eventType = extractHeaderAsString(record, "eventType");
-        String aggregateType = extractHeaderAsString(record, "aggregateType");
+        if (inboxEventRepository.alreadyHandled(messageKey)) {
+            LOG.infof("Message with key %s already handled", messageKey);
+            return CompletableFuture.completedFuture(null);
+        }
+
 
         InboxEvent inboxEvent = new InboxEvent();
-        inboxEvent.eventId = eventId;
-        inboxEvent.aggregateId = record.key();
+        inboxEvent.eventId = eventDto.eventId();
+        inboxEvent.aggregateId = eventDto.aggregateId();
         inboxEvent.receivedAt = Instant.now();
-        inboxEvent.aggregateType = aggregateType;
-        inboxEvent.eventType = eventType;
+        inboxEvent.aggregateType = "Shipment";
+        inboxEvent.eventType = eventDto.eventType().toString();
 
         try {
             inboxEvent.persistAndFlush();
-            LOG.infof("Successfully processed event - EventId: %s", eventId);
+            LOG.infof("Successfully processed event - EventId: %s", messageKey);
+            return CompletableFuture.completedFuture(null);
 
         } catch (Exception e) {
             if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                LOG.infof("Message with key  %s- already handled", record.key());
+                LOG.infof("Message with key %s already handled", messageKey);
+                return CompletableFuture.completedFuture(null);
             } else {
-                LOG.errorf(e, "Error processing event - EventId: %s", eventId);
+                LOG.errorf(e, "Error processing event - EventId: %s", messageKey);
+                return CompletableFuture.failedFuture(e);
             }
         }
     }
-
-    private String extractHeaderAsString(ConsumerRecord<String, Double> record, String headerName) {
-        if (record.headers() != null) {
-            var header = record.headers().lastHeader(headerName);
-            if (header != null && header.value() != null) {
-                return new String(header.value());
-            }
-        }
-        return null;
-    }
-
 }
