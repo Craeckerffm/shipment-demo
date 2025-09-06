@@ -13,4 +13,4 @@ rootProject.name='shipment-demo'
 
 include 'shipment-service'
 include 'scanner-service'
-//include 'tracking-service'
+include 'tracking-service'
