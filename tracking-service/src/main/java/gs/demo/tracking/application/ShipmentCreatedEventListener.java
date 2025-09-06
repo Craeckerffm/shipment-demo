@@ -20,6 +20,7 @@ public class ShipmentCreatedEventListener {
     ValidateMessage validateMessage;
 
     @Incoming("shipment-created")
+    @Incoming("shipment-updated")
     @Blocking
     @Transactional
     public CompletionStage<Void> onShipmentCreated(ConsumerRecord<String, String> record) {

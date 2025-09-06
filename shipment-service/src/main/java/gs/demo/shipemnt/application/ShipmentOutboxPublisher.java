@@ -22,8 +22,6 @@ public class ShipmentOutboxPublisher {
     @Inject
     OutboxEventRepository repository;
 
-
-
     @Inject
     @Channel("shipment-created")
     Emitter<String> shipmentEmitter;

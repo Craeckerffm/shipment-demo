@@ -30,6 +30,9 @@ public class ShipmentEventListener {
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    DemoEventsPublisher demoEventsEmitter;
+
     @Incoming("shipment-created")
     @Blocking
     @Transactional
@@ -76,6 +79,8 @@ public class ShipmentEventListener {
         try {
             inboxEvent.persistAndFlush();
             LOG.infof("Successfully processed event - EventId: %s", messageKey);
+
+            demoEventsEmitter.emmitFor(inboxEvent);
             return CompletableFuture.completedFuture(null);
 
         } catch (Exception e) {
