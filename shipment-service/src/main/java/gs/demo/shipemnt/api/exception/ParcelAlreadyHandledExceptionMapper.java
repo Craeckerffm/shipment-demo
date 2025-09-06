@@ -2,7 +2,6 @@ package gs.demo.shipemnt.api.exception;
 
 import gs.demo.shipemnt.api.dto.ErrorResponseDto;
 import gs.demo.shipemnt.application.exception.ParcelAlreadyHandledException;
-import gs.demo.shipemnt.application.exception.TrackingNumberGenerationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;

@@ -21,6 +21,7 @@ dependencies {
 
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
+    implementation "io.quarkus:quarkus-container-image-docker"
 }
 
 // Spezielle Quarkus-Konfiguration für Shipment Service

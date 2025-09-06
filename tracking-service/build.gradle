@@ -12,7 +12,6 @@ dependencies {
     implementation 'io.quarkus:quarkus-jdbc-postgresql'
     implementation 'io.quarkus:quarkus-flyway'
     implementation 'io.quarkus:quarkus-rest'
-    implementation 'io.quarkus:quarkus-scheduler'
     implementation 'io.quarkus:quarkus-rest-jackson'
 
     implementation 'org.mapstruct:mapstruct:1.6.3'
@@ -21,6 +20,7 @@ dependencies {
 
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
+    implementation "io.quarkus:quarkus-container-image-docker"
 }
 
 // Spezielle Quarkus-Konfiguration für Shipment Service
