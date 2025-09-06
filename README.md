@@ -1,13 +1,24 @@
 # Quarkus / Kafka Demo
 
 Diese Demo zeigt das Zusammenspiel von Quarkus und Kafka.
-Der Einfachheit halber sind alle Services in einem Gradle Multi-Projekt und greifen alle auf die gleiche DB zu (jeweils eigens Schema).
-Untereinander kommunizieren die Services nur über Kafka.
+
+Das System besteht aus 3 Services:
+- Shipment-Service
+- Scanner-Service
+- Tracking-Service
+
+Der Shipment-Service nimmt per POST ein Shipment entgegen und publisht in Kafka.
+Der Scanner-Service hört auf das initiale Erstellen eines Shipments und publiziert weitere (simulierte) Update-Events.
+Der Tracking-Service liest das initiale Event des Shipment-Services sowie alle weiteren Update-Events aus Kafka persistiert sie und stellt sie über einen Endpoint zur Verfügung
+
+
+Der Einfachheit halber sind alle Services in einem Gradle Multi-Module-Projekt und greifen alle auf die gleiche DB zu (jeweils eigens Schema).
+Untereinander teilen die Services keine Abhängigkeiten und kommunizieren lediglich über Kafka.
 
 
 ## Installation
 - docker-compose up -d (im Root-Projekt)
-- services bauen & starten
+- module bauen & starten
 
 ## API
 ### Shipment erstellen
