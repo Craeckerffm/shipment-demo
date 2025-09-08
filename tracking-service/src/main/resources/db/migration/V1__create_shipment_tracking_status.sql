@@ -7,3 +7,5 @@ CREATE TABLE shipment_tracking_status
     occurred_on     TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL
 );
+
+CREATE INDEX idx_shipment_tracking_status_number ON shipment_tracking_status(tracking_number);
