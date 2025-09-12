@@ -37,20 +37,18 @@ public class ShipmentOutboxPublisher {
         }
     }
 
-    @Transactional
     void processEvent(OutboxEvent event) {
         try {
             KafkaRecord<String, String> record = KafkaRecord.of(event.getAggregateId(), event.getPayload())
                     .withHeader("eventType", event.getEventType().name())
-                    .withHeader("aggregateType", event.getAggregateId())
+                    .withHeader("aggregateType", event.getAggregateType())
                     .withHeader("producerService", "shipment-service")
                     .withHeader("correlationId", event.getAggregateId())
                     .withHeader("timestamp", event.getOccurredOn().toString());
 
             shipmentEmitter.send(record);
-            event.setProcessed(true);
-            event.setStatus(EventStatus.SUCCESS);
-            repository.save(event);
+
+            updateEventStatus(event, EventStatus.SUCCESS);
 
             LOG.infof("Successfully published event %d for aggregate %s",
                     event.getId(), event.getAggregateId());
@@ -59,8 +57,17 @@ public class ShipmentOutboxPublisher {
             LOG.errorf(e, "Failed to publish event %d for aggregate %s",
                     event.getId(), event.getAggregateId());
 
-            event.setStatus(EventStatus.FAILED);
-            repository.save(event);
+            updateEventStatus(event, EventStatus.FAILED);
         }
     }
+    @Transactional
+    void updateEventStatus(OutboxEvent event, EventStatus status) {
+        event.setStatus(status);
+        if (status == EventStatus.SUCCESS) {
+            event.setProcessed(true);
+        }
+        repository.save(event);
+    }
+
+
 }
