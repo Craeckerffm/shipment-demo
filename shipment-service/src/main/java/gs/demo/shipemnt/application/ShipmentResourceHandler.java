@@ -38,11 +38,11 @@ public class ShipmentResourceHandler {
         }
 
         Shipment s = mapper.fromCreate(dto);
-        s.trackingNumber = trackingNumberService.generateTrackingNumber();
+        s.setTrackingNumber(trackingNumberService.generateTrackingNumber());
         shipmentRepository.save(s);
 
-        outboxEventService.createShipmentEvent(s.trackingNumber, ShipmentStatus.CREATED);
+        outboxEventService.createShipmentEvent(s.getTrackingNumber(), ShipmentStatus.CREATED);
 
-        return new ShipmentResponseDto(s.trackingNumber);
+        return new ShipmentResponseDto(s.getTrackingNumber());
     }
 }

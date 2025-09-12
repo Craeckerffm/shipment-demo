@@ -70,11 +70,11 @@ public class ShipmentEventListener {
 
 
         InboxEvent inboxEvent = new InboxEvent();
-        inboxEvent.eventId = eventDto.eventId();
-        inboxEvent.aggregateId = eventDto.aggregateId();
-        inboxEvent.receivedAt = Instant.now();
-        inboxEvent.aggregateType = "Shipment";
-        inboxEvent.eventType = eventDto.eventType().toString();
+        inboxEvent.setEventId( eventDto.eventId());
+        inboxEvent.setAggregateId(eventDto.aggregateId());
+        inboxEvent.setReceivedAt(Instant.now());
+        inboxEvent.setAggregateType("Shipment");
+        inboxEvent.setEventType(eventDto.eventType().toString());
 
         try {
             inboxEvent.persistAndFlush();

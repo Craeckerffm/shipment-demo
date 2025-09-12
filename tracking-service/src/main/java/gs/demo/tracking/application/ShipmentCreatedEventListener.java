@@ -29,10 +29,10 @@ public class ShipmentCreatedEventListener {
         return validateMessage.validate(record.key(), record.value()).thenCompose(eventDto -> {
 
             ShipmentTrackingStatus shipmentTrackingStatus = new ShipmentTrackingStatus();
-            shipmentTrackingStatus.eventId = eventDto.eventId();
-            shipmentTrackingStatus.trackingNumber = eventDto.aggregateId();
-            shipmentTrackingStatus.occurredOn = eventDto.occurredOn();
-            shipmentTrackingStatus.shipmentStatus = eventDto.eventType();
+            shipmentTrackingStatus.setEventId(eventDto.eventId());
+            shipmentTrackingStatus.setTrackingNumber(eventDto.aggregateId());
+            shipmentTrackingStatus.setOccurredOn(eventDto.occurredOn());
+            shipmentTrackingStatus.setShipmentStatus(eventDto.eventType());
 
             try {
                 shipmentTrackingStatus.persistAndFlush();

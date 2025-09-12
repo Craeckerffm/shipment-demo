@@ -26,16 +26,16 @@ public class OutboxEventService {
 
     public void createShipmentEvent(String aggregateId, ShipmentStatus eventType) {
         OutboxEvent event = new OutboxEvent();
-        event.eventId = UUID.randomUUID().toString();
-        event.aggregateType = "Shipment";
-        event.aggregateId = aggregateId;
-        event.eventType = eventType;
-        event.occurredOn = Instant.now();
+        event.setEventId(UUID.randomUUID().toString());
+        event.setAggregateType("Shipment");
+        event.setAggregateId(aggregateId);
+        event.setEventType(eventType);
+        event.setOccurredOn(Instant.now());
 
         ShipmentEventDto eventData = outboxEventMapper.toDto(event);
 
         try {
-            event.payload = objectMapper.writeValueAsString(eventData);
+            event.setPayload(objectMapper.writeValueAsString(eventData));
         } catch (Exception e) {
             throw new RuntimeException("Failed to serialize event data to JSON", e);
         }

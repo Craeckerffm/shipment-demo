@@ -35,45 +35,45 @@ public class DemoEventsPublisher {
         events.add(new ShipmentEventDto(
                 UUID.randomUUID().toString(),
                 ShipmentStatus.PICKED_UP,
-                event.aggregateId,
+                event.getAggregateId(),
                 Instant.now().plus(Duration.ofDays(1))));
         events.add(new ShipmentEventDto(
                 UUID.randomUUID().toString(),
                 ShipmentStatus.IN_TRANSIT,
-                event.aggregateId,
+                event.getAggregateId(),
                 Instant.now().plus(Duration.ofDays(2))));
         events.add(new ShipmentEventDto(
                 UUID.randomUUID().toString(),
                 ShipmentStatus.OUT_FOR_DELIVERY,
-                event.aggregateId,
+                event.getAggregateId(),
                 Instant.now().plus(Duration.ofDays(3))));
         events.add(new ShipmentEventDto(
                 UUID.randomUUID().toString(),
                 ShipmentStatus.DELIVERED,
-                event.aggregateId,
+                event.getAggregateId(),
                 Instant.now().plus(Duration.ofDays(4))));
 
         events.forEach(dto -> {
             try {
                 String payload = objectMapper.writeValueAsString(dto);
 
-                KafkaRecord<String, String> record = KafkaRecord.of(event.aggregateId, payload)
+                KafkaRecord<String, String> record = KafkaRecord.of(event.getAggregateId(), payload)
                         .withHeader("eventType", "SHIPMENT")
                         .withHeader("aggregateType", "UPDATE")
                         .withHeader("producerService", "scanner-service")
-                        .withHeader("correlationId", event.aggregateId)
+                        .withHeader("correlationId", event.getAggregateId())
                         .withHeader("timestamp", dto.occurredOn().toString());
 
                 shipmentEmitter.send(record);
 
                 LOG.infof("Successfully published event for aggregate %s with status %s",
-                        event.aggregateId, dto.eventType());
+                        event.getAggregateId(), dto.eventType());
                 Thread.sleep(5000);
 
 
             } catch (Exception e) {
                 LOG.errorf(e, "Failed to publish event for aggregate %s with status %s",
-                        event.aggregateId, dto.eventType());
+                        event.getAggregateId(), dto.eventType());
             }
         });
 

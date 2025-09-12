@@ -11,22 +11,70 @@ import java.time.Instant;
 public class ShipmentTrackingStatus extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
     @Column(nullable = false, length = 100)
-    public String trackingNumber;
+    private String trackingNumber;
 
     @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    public ShipmentStatus shipmentStatus;
+    private ShipmentStatus shipmentStatus;
 
     @Column(nullable = false, length = 100, unique = true)
-    public String eventId;
+    private String eventId;
 
     @Column(nullable = false)
-    public Instant occurredOn;
+    private Instant occurredOn;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    public Instant createdAt;
+    private Instant createdAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTrackingNumber() {
+        return trackingNumber;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public ShipmentStatus getShipmentStatus() {
+        return shipmentStatus;
+    }
+
+    public void setShipmentStatus(ShipmentStatus shipmentStatus) {
+        this.shipmentStatus = shipmentStatus;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public Instant getOccurredOn() {
+        return occurredOn;
+    }
+
+    public void setOccurredOn(Instant occurredOn) {
+        this.occurredOn = occurredOn;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
 }
