@@ -5,12 +5,15 @@ import gs.demo.scanner.api.dto.ShipmentEventDto;
 import gs.demo.scanner.domain.entity.InboxEvent;
 import gs.demo.scanner.domain.repository.InboxEventRepository;
 import io.smallrye.common.annotation.Blocking;
+import io.smallrye.reactive.messaging.kafka.api.IncomingKafkaRecordMetadata;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Validator;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
+
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -63,14 +66,13 @@ public class ShipmentEventListener {
             return CompletableFuture.failedFuture(new IllegalArgumentException("Message key is required"));
         }
 
-        if (inboxEventRepository.alreadyHandled(messageKey)) {
+        if (inboxEventRepository.alreadyHandled(eventDto.eventId())) {
             LOG.infof("Message with key %s already handled", messageKey);
             return CompletableFuture.completedFuture(null);
         }
 
-
         InboxEvent inboxEvent = new InboxEvent();
-        inboxEvent.setEventId( eventDto.eventId());
+        inboxEvent.setEventId(eventDto.eventId());
         inboxEvent.setAggregateId(eventDto.aggregateId());
         inboxEvent.setReceivedAt(Instant.now());
         inboxEvent.setAggregateType("Shipment");
@@ -79,18 +81,11 @@ public class ShipmentEventListener {
         try {
             inboxEvent.persistAndFlush();
             LOG.infof("Successfully processed event - EventId: %s", messageKey);
-
             demoEventsEmitter.emmitFor(inboxEvent);
             return CompletableFuture.completedFuture(null);
-
         } catch (Exception e) {
-            if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                LOG.infof("Message with key %s already handled", messageKey);
-                return CompletableFuture.completedFuture(null);
-            } else {
-                LOG.errorf(e, "Error processing event - EventId: %s", messageKey);
-                return CompletableFuture.failedFuture(e);
-            }
+            LOG.errorf(e, "Error processing event - EventId: %s", messageKey);
+            return CompletableFuture.failedFuture(e);
         }
     }
 }
