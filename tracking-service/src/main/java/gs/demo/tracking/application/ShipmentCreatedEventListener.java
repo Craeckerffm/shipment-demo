@@ -1,14 +1,13 @@
 package gs.demo.tracking.application;
 
 import gs.demo.tracking.domain.entity.ShipmentTrackingStatus;
+import gs.demo.tracking.api.dto.ShipmentEventDto;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static io.quarkus.arc.ComponentsProvider.LOG;
 
@@ -23,31 +22,28 @@ public class ShipmentCreatedEventListener {
     @Incoming("shipment-updated")
     @Blocking
     @Transactional
-    public CompletionStage<Void> onShipmentCreated(ConsumerRecord<String, String> record) {
+    public void onShipmentCreated(ConsumerRecord<String, String> record) {
 
+        String messageKey = record.key();
+        String jsonPayload = record.value();
 
-        return validateMessage.validate(record.key(), record.value()).thenCompose(eventDto -> {
-
+        try {
+            ShipmentEventDto eventDto = validateMessage.validate(messageKey, jsonPayload);
             ShipmentTrackingStatus shipmentTrackingStatus = new ShipmentTrackingStatus();
             shipmentTrackingStatus.setEventId(eventDto.eventId());
             shipmentTrackingStatus.setTrackingNumber(eventDto.aggregateId());
             shipmentTrackingStatus.setOccurredOn(eventDto.occurredOn());
             shipmentTrackingStatus.setShipmentStatus(eventDto.eventType());
 
-            try {
-                shipmentTrackingStatus.persistAndFlush();
-                LOG.infof("Successfully processed event - EventId: %s", record.key());
-                return CompletableFuture.completedFuture(null);
+            shipmentTrackingStatus.persistAndFlush();
+            LOG.infof("Successfully processed event - EventId: %s", messageKey);
 
-            } catch (Exception e) {
-                if (e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                    LOG.infof("Message with key %s already handled", record.key());
-                    return CompletableFuture.completedFuture(null);
-                } else {
-                    LOG.errorf(e, "Error processing event - EventId: %s", record.key());
-                    return CompletableFuture.failedFuture(e);
-                }
-            }
-        });
+        } catch (org.hibernate.exception.ConstraintViolationException e) {
+            LOG.infof("Message with key %s already handled", messageKey);
+
+        } catch (Exception e) {
+            LOG.errorf(e, "Error processing event - EventId: %s", messageKey);
+            throw new RuntimeException("Failed to process event", e);
+        }
     }
 }
